@@ -20,6 +20,7 @@ void main(){
 	float noiseOrigin = simplexNoise3d(position * 0.2); // 元の頂点 -.2 〜 .2 の範囲に
 	float noiseTarget = simplexNoise3d(aPositionTarget * 0.2); // 移動後の頂点
 	float noise = mix(noiseOrigin, noiseTarget, uProgress);
+
 	noise = smoothstep(-1.0, 1.0, noise); // noise < -1 なら0を返す。1 < noise なら1を返す。
 																				// その間はゆっくり線形補間で返す。
 																				// 👉 0 〜 1に 正規化している。
@@ -46,7 +47,6 @@ void main(){
 
 	vec3 mixedPosition = mix(position, aPositionTarget, progress); 
 	
-
 	// Final position
 	vec4 modelPosition = modelMatrix * vec4(mixedPosition, 1.0); // ワールド座標に変換
 	vec4 viewPosition = viewMatrix * modelPosition; // 視点座標に変換

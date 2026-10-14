@@ -168,7 +168,7 @@ gltfLoader.load('./models.glb', (gltf) => {
 		// 	Float32BufferAttribute {...}  // ← 3番目
 		// ]
   }
-	// console.log(particles);
+	console.log(particles);
   
 	// ✅ Geometry particlesの頂点関係
 	const sizesArray = new Float32Array(particles.maxCount); // 10242
@@ -179,6 +179,7 @@ gltfLoader.load('./models.glb', (gltf) => {
   }
   // console.log(sizesArray); // Float32Array(10242) 
 
+  // ✅ particlesの頂点を設定していく
 	particles.geometry = new BufferGeometry();
 	// console.log(particles.positions[particles.index]); // Float32BufferAttribute {isBufferAttribute: true, name: '', array: Float32Array(30726), itemSize: 3, count: 10242, …}
 	particles.geometry.setAttribute('position', particles.positions[particles.index]); // 初めのモーフィングの頂点をいれる
@@ -209,14 +210,14 @@ gltfLoader.load('./models.glb', (gltf) => {
 		depthWrite: false
 	})
 
-	// ✅ Points → 頂点をPointで表示する
+	// ✅ メッシュ。Points → 頂点をPointで表示する
 	particles.points = new Points(particles.geometry, particles.material)
 	particles.points.frustumCulled = false; // 👉 カメラの視錐台(Frustum)に入っているかどうかで描画するかを自動判定するかを制御
 																					//    true(デフォルト)：視錐台外のオブジェクトは描画されない
 																					//    false：視錐台外でも描画される
 	scene.add(particles.points)
 
-	// ✅ → guiツールから切り替えるメソッド
+	// ✅ → guiツールから切り替える関数
 	particles.morph = (_index) => { // 0 1 2 3
 		// 頂点の更新
 		particles.geometry.attributes.position = particles.positions[particles.index] // 元のモーフィングの頂点
@@ -226,9 +227,9 @@ gltfLoader.load('./models.glb', (gltf) => {
 		gsap.fromTo(particles.material.uniforms.uProgress,
 			{ value: 0 },
 			{ value: 1, duration: 3, ease: 'expo.out' }
-		)
+		);
 
-		particles.index = _index // インデックスの更新
+		particles.index = _index; // インデックスの更新
 	}
 
 	// ✅ guiに登録
@@ -236,6 +237,7 @@ gltfLoader.load('./models.glb', (gltf) => {
 	gui.addColor(particles, 'colorB').onChange(() => { particles.material.uniforms.uColorB.value.set(particles.colorB) })
 	gui.add(particles.material.uniforms.uProgress, 'value').min(0).max(1).step(0.001).name('uProgress').listen()
 
+  // 切り替える関数を作る
 	particles.morph0 = () => { particles.morph(0) }
 	particles.morph1 = () => { particles.morph(1) }
 	particles.morph2 = () => { particles.morph(2) }

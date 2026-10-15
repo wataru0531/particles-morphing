@@ -16,16 +16,17 @@ varying vec3 vColor;
 
 void main(){
 	// Mixed position
-	// simplexノイズ　→ -1 〜 1の範囲で返す。
+	// simplexノイズ　→ -1 〜 1の範囲
 	float noiseOrigin = simplexNoise3d(position * 0.2); // 元の頂点 -.2 〜 .2 の範囲に
 	float noiseTarget = simplexNoise3d(aPositionTarget * 0.2); // 移動後の頂点
 	float noise = mix(noiseOrigin, noiseTarget, uProgress);
 
+  // ノイズの値を使いやすい 0〜1 の範囲に変換しながら、値の変化をなめらかにする
 	noise = smoothstep(-1.0, 1.0, noise); // noise < -1 なら0を返す。1 < noise なら1を返す。
 																				// その間はゆっくり線形補間で返す。
 																				// 👉 0 〜 1に 正規化している。
 																				//    元々が-0.2 〜 0.2の範囲で返していたが、
-																				//    ここでは、0.3 〜 0.7 くらいのの範囲で返す
+																				//    ここでは、0.3 〜 0.7 くらいの範囲で返す
 																				// x=-1        0         +1   (変換前)
 																				// |-----------|-----------|
 																				// 0          0.5          1 (変換後)

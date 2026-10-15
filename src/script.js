@@ -33,14 +33,14 @@ const scene = new Scene();
 // 圧縮されたデータはそのままでは Three.js が使えないので、DRACOLoaderでデコードする必要がある。
 // → dracoフォルダに draco_decoder.js や draco_decoder.wasm がある必要がある
 const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath('./draco/');
+dracoLoader.setDecoderPath('./draco/'); // → デコードに必要なファイルが置かれている場所を指定
 
 // ✅ gltfLoader
 // → GLTFLoader は通常の GLTF/GLB を読み込むが、モデル内のメッシュが 
 //   Draco 圧縮されている場合、DRACOLoader を使って自動で展開できるように設定する
 const gltfLoader = new GLTFLoader();
-gltfLoader.setDRACOLoader(dracoLoader);
-// → glftローダーに設定する
+gltfLoader.setDRACOLoader(dracoLoader); // → glftローダーにデコードするためのDracoLoaderを設定する
+
 
 const sizes = {
 	width: window.innerWidth,
@@ -54,9 +54,9 @@ window.addEventListener('resize', () => {
 	sizes.height = window.innerHeight
 	sizes.pixelRatio = Math.min(window.devicePixelRatio, 2)
 
-	if(particles)
+	if(particles) {
 		particles.material.uniforms.uResolution.value.set(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)
-
+  }
 	camera.aspect = sizes.width / sizes.height
 	camera.updateProjectionMatrix()
 	renderer.setSize(sizes.width, sizes.height)
@@ -122,7 +122,7 @@ gltfLoader.load('./models.glb', (gltf) => {
 	//    頂点数が足りないMeshは 既存の頂点をランダムにコピー → これで全Meshが同じ長さの頂点配列になる
 	for(const position of positions){ // (4) [BufferAttribute, BufferAttribute, BufferAttribute, BufferAttribute]
 		// console.log(position); // BufferAttribute {isBufferAttribute: true, name: '', array: Float32Array(29928), itemSize: 3, count: 9976, …}
-		// console.log(position.count); // ⭐️ 頂点の数 9976 7958 10240 9522
+		// console.log(position.count); // ⭐️ 頂点の数 9976 7958 10242 9522
 
 		// ✅ 元の頂点数 x, y, z の頂点配列
 		const originalArray = position.array; // ⭐️ 頂点の座表そのもの。position.count の3倍
@@ -135,7 +135,7 @@ gltfLoader.load('./models.glb', (gltf) => {
 
 		// ⭐️ 新しい配列に入れる予定の頂点数は30726で、元の頂点をできるだけいれる。
 		//    しかし、足りない場合は、ランダムな値を生成して頂点をいれていく。
-		for(let i = 0; i < particles.maxCount; i++) { // 👉 10242回ループ
+		for(let i = 0; i < particles.maxCount; i++) { // 👉 10242回ループ(manCountに合わせている)
 			const i3 = i * 3;
 			// console.log(i3); // 0 3 6 9 12 ... 3の倍数
 
@@ -168,7 +168,7 @@ gltfLoader.load('./models.glb', (gltf) => {
 		// 	Float32BufferAttribute {...}  // ← 3番目
 		// ]
   }
-	console.log(particles);
+	// console.log(particles);
   
 	// ✅ Geometry particlesの頂点関係
 	const sizesArray = new Float32Array(particles.maxCount); // 10242
@@ -193,8 +193,8 @@ gltfLoader.load('./models.glb', (gltf) => {
 	// console.log(particles.geometry); // _BufferGeometry {isBufferGeometry: true, uuid: '7b8d6e35-14c6-4a5e-a68a-20384f52e341', name: '', type: 'BufferGeometry', index: null, …}
 
 	// ✅ Material
-	particles.colorA = '#ff7300'
-	particles.colorB = '#0091ff'
+	particles.colorA = '#ff7300';
+	particles.colorB = '#0091ff';
 	
 	particles.material = new ShaderMaterial({
 		vertexShader: particlesVertexShader,
@@ -207,15 +207,15 @@ gltfLoader.load('./models.glb', (gltf) => {
 			uColorB: new Uniform(new Color(particles.colorB))
 		},
 		blending: AdditiveBlending, // 他のMeshや背景色と重なった場合は色を上書きせずに現実のように色を混ぜ合わせる。
-		depthWrite: false
-	})
+		depthWrite: false,
+	});
 
 	// ✅ メッシュ。Points → 頂点をPointで表示する
-	particles.points = new Points(particles.geometry, particles.material)
+	particles.points = new Points(particles.geometry, particles.material);
 	particles.points.frustumCulled = false; // 👉 カメラの視錐台(Frustum)に入っているかどうかで描画するかを自動判定するかを制御
 																					//    true(デフォルト)：視錐台外のオブジェクトは描画されない
 																					//    false：視錐台外でも描画される
-	scene.add(particles.points)
+	scene.add(particles.points);
 
 	// ✅ → guiツールから切り替える関数
 	particles.morph = (_index) => { // 0 1 2 3

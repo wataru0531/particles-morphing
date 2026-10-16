@@ -15,14 +15,16 @@ varying vec3 vColor;
 #include ../includes/simplexNoise3d.glsl
 
 void main(){
-	// Mixed position
+	// 各頂点にノイズの値を割り当てて、頂点ごとにモーフィングを開始するタイミングを変える
 	// simplexノイズ　→ -1 〜 1の範囲
 	float noiseOrigin = simplexNoise3d(position * 0.2); // 元の頂点 -.2 〜 .2 の範囲に
 	float noiseTarget = simplexNoise3d(aPositionTarget * 0.2); // 移動後の頂点
 	float noise = mix(noiseOrigin, noiseTarget, uProgress);
 
-  // ノイズの値を使いやすい 0〜1 の範囲に変換しながら、値の変化をなめらかにする
-	noise = smoothstep(-1.0, 1.0, noise); // noise < -1 なら0を返す。1 < noise なら1を返す。
+  // -1〜1の範囲を、ノイズの値を使いやすい 0〜1 の範囲に変換しながら、値の変化をなめらかにする
+	noise = smoothstep(-1.0, 1.0, noise); // noise < -1 ... 0を返す。
+                                        // noise = 0  ... 0.5を返す。
+                                        // 1 < noise  ... 1を返す。
 																				// その間はゆっくり線形補間で返す。
 																				// 👉 0 〜 1に 正規化している。
 																				//    元々が-0.2 〜 0.2の範囲で返していたが、
@@ -40,13 +42,14 @@ void main(){
 																					// → 
 	// 遅延時間 + 動かす時間 ... その頂点が動き終わる時間
 	float end = delay + duration; // (0.18 〜 0.7) + 0.4。 0.58 〜 0.82 の範囲
+  // 遅延時間がスタートで、終わりがend、それを0 〜 1に変換
 	float progress = smoothstep(delay, end, uProgress); // 0.18 〜 0.82 を 0〜1の範囲に正規化
 																											// delay → いつ動き始めるか（開始時刻）
 																											// end → いつ動き終わるか（終了時刻）
 																											// 仮に0.18から0.82の範囲内だけで動く
 																											// → それを0から1にマッピング
 
-	vec3 mixedPosition = mix(position, aPositionTarget, progress); 
+	vec3 mixedPosition = mix(position, aPositionTarget, progress); // 位置を変える
 	
 	// Final position
 	vec4 modelPosition = modelMatrix * vec4(mixedPosition, 1.0); // ワールド座標に変換
@@ -56,16 +59,16 @@ void main(){
 	vec4 projectedPosition = projectionMatrix * viewPosition;
 	gl_Position = projectedPosition;
 
-	// ✅ ポイントのサイズ
+	// ✅ ポイントのサイズ → 画面の高さが高いほどポイントのサイズを大きくする
 	gl_PointSize = aSize * uSize * uResolution.y; // ランダムな0〜1 * 0.4 * ビューポートの2倍のサイズ
 	gl_PointSize *= (1.0 / - viewPosition.z); // camera.position → 24
-																						// 視点座標から見たモデルなのでマイナス。マイナスをかけてプラスにする
+	// 																					// 視点座標から見たモデルなのでマイナス。マイナスをかけてプラスにする
 																						// 👉 遠ければ粒子が小さくなり、近ければ大きくなる
+  // gl_PointSize = aSize * 80.;
 
 	vColor = mix(uColorA, uColorB, noise); // noiseはおおよそ0.3から0.7
 																				 // → ここではmixで線形に色を変えている
 }
-
 
 
 

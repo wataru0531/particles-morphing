@@ -11,11 +11,12 @@ void main(){
 	float distanceToCenter = length(uv - 0.5); // 中央からの距離。おおよそ0.0〜0.7
 																							// ⭐️ 実際には0ではなくかなり小さい数値らしい
 	float alpha = (0.05 / distanceToCenter) - 0.1; // 中心が明るく、端が暗く
-	
+	// float alpha = clamp((0.05 / distanceToCenter) - 0.1, 0., 1.); // 0から1に丸める
+
 	gl_FragColor = vec4(vColor, alpha);
 
-	#include <tonemapping_fragment>
-	#include <colorspace_fragment>
+	#include <tonemapping_fragment> // トーンマッピング。明るさの見え方を調整する。
+	#include <colorspace_fragment>  // 色空間を変換し、画面で適切に見えるようにする。
 }
 
 
